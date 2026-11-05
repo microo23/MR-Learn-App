@@ -2,7 +2,11 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mattehjälten">
 <title>Mattehjälten 🦸</title>
 <style>
   :root {
@@ -18,12 +22,19 @@
   html, body {
     height: 100%; height: 100dvh;
     overflow: hidden;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
   }
+  button, .mode-card, canvas { touch-action: manipulation; }
 
   body {
     font-family: var(--font-body);
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 10px 12px;
+    padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     background: linear-gradient(135deg, #e0f7fa 0%, #e8f5e9 50%, #fff9c4 100%);
     transition: background 0.5s;
   }
@@ -1245,6 +1256,12 @@ function launchConfetti(count = 60) {
     }, i * 22);
   }
 }
+// Block iOS zoom (double-tap, pinch)
+(function () {
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(t =>
+    document.addEventListener(t, e => e.preventDefault()));
+  document.addEventListener('dblclick', e => e.preventDefault());
+})();
 // Init on load
 initHome();
 </script>
