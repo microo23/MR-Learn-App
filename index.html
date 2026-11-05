@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mattehjälten 🦸</title>
+<style>
+  :root {
+    --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-display: ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --sun: #FFD600; --green: #66BB6A; --red: #EF5350;
+    --purple: #AB47BC; --orange: #FFA726; --sky: #4fc3f7;
+    --card: #fff; --text: #1a237e;
+    --shadow: 0 8px 32px rgba(31,38,135,0.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%; height: 100dvh;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: var(--font-body);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #e0f7fa 0%, #e8f5e9 50%, #fff9c4 100%);
+    transition: background 0.5s;
+  }
+  body.mode-add  { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #fff9c4 100%); }
+  body.mode-clk  { background: linear-gradient(135deg, #e8eaf6 0%, #ede7f6 50%, #fce4ec 100%); }
+  body.mode-div  { background: linear-gradient(135deg, #e0f9ff 0%, #e0f7fa 50%, #fff9c4 100%); }
+  body.mode-sub  { background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 50%, #fff9c4 100%); }
+  body.mode-mul  { background: linear-gradient(135deg, #f3e5f5 0%, #ede7f6 50%, #fff9c4 100%); }
+  body.mode-mix  { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 50%, #e8f5e9 100%); }
+
+  /* ── VIEWS ── */
+  .view { display: none; width: 100%; max-width: 440px; flex-direction: column; align-items: center; height: 100%; justify-content: center; }
+  .view.active { display: flex; }
+
+  /* ── HOME ── */
+  .hero-emoji { font-size: 2.6rem; animation: float 3s ease-in-out infinite; text-align: center; margin-bottom: 2px; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  h1 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.6rem, 7vw, 2.4rem);
+    color: var(--text); text-align: center;
+    text-shadow: 2px 2px 0 var(--sun); margin-bottom: 2px;
+  }
+  .subtitle { font-size: 0.88rem; color: #5c6bc0; text-align: center; margin-bottom: 12px; font-weight: 700; }
+
+  .mode-cards { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+  .mode-card {
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; border-radius: 14px; padding: 10px 14px;
+    box-shadow: var(--shadow); cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .mode-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(31,38,135,0.18); }
+  .mode-card:active { transform: scale(0.98); }
+  .mode-card.add { border-color: #66BB6A; } .mode-card.add:hover { background: #f1fff2; }
+  .mode-card.clk { border-color: #7E57C2; } .mode-card.clk:hover { background: #f3f0ff; }
+  .mode-card.div { border-color: #26C6DA; } .mode-card.div:hover { background: #e0f9ff; }
+  .mode-card.sub { border-color: #42a5f5; } .mode-card.sub:hover { background: #f0f8ff; }
+  .mode-card.mul { border-color: #AB47BC; } .mode-card.mul:hover { background: #fdf4ff; }
+  .mode-card.mix { border-color: #FF7043; } .mode-card.mix:hover { background: #fff4f0; }
+  .mode-icon { font-size: 1.8rem; width: 36px; text-align: center; flex-shrink: 0; }
+  .mode-title { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--text); line-height: 1; margin-bottom: 1px; }
+  .mode-desc  { font-size: 0.72rem; font-weight: 700; color: #90a4ae; }
+  .mode-arrow { font-size: 1.1rem; color: #cfd8dc; margin-left: auto; }
+  .home-footer { margin-top: 10px; font-size: 0.75rem; color: #b0bec5; font-weight: 700; text-align: center; }
+
+  /* ── GAME ── */
+  #view-game {
+    justify-content: flex-start;
+    padding-top: 4px;
+    gap: 0;
+  }
+
+  .back-btn {
+    align-self: flex-start; font-family: var(--font-display); font-weight: 800; font-size: 0.85rem;
+    color: #5c6bc0; background: #fff; border: none; border-radius: 10px;
+    padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    margin-bottom: 4px; cursor: pointer; transition: transform 0.15s;
+  }
+  .back-btn:hover { transform: translateX(-3px); }
+
+  .game-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.3rem,5vw,1.8rem); color: var(--text); text-align: center; text-shadow: 2px 2px 0 var(--sun); margin-bottom: 2px; }
+  .game-subtitle { font-size: 0.82rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+
+  .level-bar { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 6px; width: 100%; }
+  .level-pip {
+    width: 34px; height: 34px; border-radius: 50%; background: #cfd8dc;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; border: 2px solid #b0bec5; transition: all 0.4s;
+  }
+  .level-pip.done   { background: var(--sun); border-color: var(--orange); box-shadow: 0 2px 8px rgba(255,214,0,0.5); }
+  .level-pip.active { border-color: #0288d1; color: #fff; transform: scale(1.12); animation: pulse-pip 1.5s infinite; }
+  .level-pip.active.add-pip { background: #66BB6A; border-color: #43a047; }
+  .level-pip.active.clk-pip { background: #7E57C2; border-color: #5e35b1; }
+  .level-pip.active.div-pip { background: #26C6DA; border-color: #00acc1; }
+  .level-pip.active.sub-pip { background: #42a5f5; border-color: #1e88e5; }
+  .level-pip.active.mul-pip { background: #AB47BC; border-color: #8e24aa; }
+  .level-pip.active.mix-pip { background: #FF7043; border-color: #e64a19; }
+  @keyframes pulse-pip { 0%,100%{box-shadow:0 0 0 3px rgba(79,195,247,0.3)} 50%{box-shadow:0 0 0 6px rgba(79,195,247,0.1)} }
+
+  .card { background: var(--card); border-radius: 22px; padding: 14px 16px 12px; width: 100%; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .card::before { content:''; position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,214,0,0.12); }
+
+  .stats { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 10px; }
+  .stat-box { flex:1; background:#f5f5f5; border-radius:12px; padding:6px 4px; text-align:center; }
+  .stat-label { font-size:0.6rem; font-weight:800; color:#90a4ae; text-transform:uppercase; letter-spacing:0.5px; }
+  .stat-value { font-family: var(--font-display); font-weight: 800; font-size:1.3rem; color:var(--text); line-height:1; margin-top:1px; }
+  .stat-value.streak { color:var(--orange); }
+  .stat-value.score  { color:var(--purple); }
+  .stat-value.lv     { color:var(--sky); }
+
+  .question-area { text-align:center; margin-bottom:8px; padding:4px 0; }
+  .question { font-family: var(--font-display); font-weight: 800; font-size:clamp(2rem,10vw,3.2rem); color:var(--text); line-height:1; animation:pop-in 0.35s cubic-bezier(.36,2,.4,1) both; }
+  @keyframes pop-in { from{opacity:0;transform:scale(0.6)} to{opacity:1;transform:scale(1)} }
+
+  .feedback { text-align:center; font-size:1rem; font-weight:900; min-height:24px; border-radius:10px; padding:2px 0; margin-bottom:4px; }
+  .feedback.correct { color:var(--green); animation:bounce-fb 0.4s; }
+  .feedback.wrong   { color:var(--red);   animation:shake 0.4s; }
+  @keyframes bounce-fb { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+  @keyframes shake     { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+
+  .progress-wrap { background:#e0e0e0; border-radius:999px; height:7px; overflow:hidden; }
+  .progress-bar  { height:100%; background:linear-gradient(90deg,var(--sky),var(--purple)); border-radius:999px; transition:width 0.5s cubic-bezier(.4,2,.4,1); }
+  .progress-label { font-size:0.65rem; color:#90a4ae; font-weight:800; text-align:right; margin-top:2px; }
+
+  .stars-area { min-height:22px; font-size:1rem; word-break:break-all; text-align:center; letter-spacing:1px; margin: 4px 0; }
+
+  .trophies { display:flex; justify-content:center; gap:6px; margin-top:4px; flex-wrap:wrap; }
+  .trophy { font-size:1.5rem; opacity:0.2; transition:opacity 0.5s,transform 0.5s; filter:grayscale(1); }
+  .trophy.earned { opacity:1; filter:none; transform:scale(1.1); }
+
+  /* ── NUMPAD ── */
+  .answer-display {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 1.9rem;
+    text-align: center;
+    background: #fafafa;
+    border: 2px solid #b0bec5;
+    border-radius: 12px;
+    padding: 6px 12px;
+    min-height: 48px;
+    color: var(--text);
+    margin-bottom: 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    letter-spacing: 2px;
+  }
+  .answer-display.has-value { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(79,195,247,0.2); }
+
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 0;
+  }
+  .num-btn {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 1.35rem;
+    padding: 11px 0;
+    border: none;
+    border-radius: 11px;
+    background: #f0f4ff;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 3px 0 #c5cae9;
+    transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+    user-select: none; -webkit-user-select: none;
+  }
+  .num-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #c5cae9; background: #e3e8ff; }
+  .num-btn.zero   { grid-column: span 2; }
+  .num-btn.del    { background: #fff0f0; color: #e53935; box-shadow: 0 3px 0 #ffcdd2; }
+  .num-btn.del:active { background: #ffcdd2; }
+  .num-btn.check  { grid-column: span 3; font-size: 1.2rem; background: linear-gradient(135deg,#42a5f5,#1e88e5); color:#fff; box-shadow: 0 3px 0 #1565c0; padding: 12px 0; }
+  .num-btn.check:active { background: linear-gradient(135deg,#1e88e5,#1565c0); box-shadow: 0 1px 0 #0d47a1; }
+
+  /* ── WIN ── */
+  .win-screen { display:none; text-align:center; padding:10px 0; }
+  .win-screen.show { display:block; }
+  .win-emoji { font-size:3.5rem; animation:float 2s ease-in-out infinite; }
+  .win-title { font-family: var(--font-display); font-weight: 800; font-size:1.8rem; color:var(--text); margin:8px 0 6px; }
+  .win-sub   { font-size:0.9rem; color:#5c6bc0; font-weight:700; margin-bottom:14px; }
+  .restart-btn { font-family: var(--font-display); font-weight: 800; font-size:1.1rem; padding:10px 24px; background:linear-gradient(135deg,var(--sun),var(--orange)); color:#fff; border:none; border-radius:16px; cursor:pointer; box-shadow:0 3px 12px rgba(255,167,38,0.5); transition:transform 0.15s; margin-right: 8px; }
+  .home-btn    { font-family: var(--font-display); font-weight: 800; font-size:1.1rem; padding:10px 24px; background:linear-gradient(135deg,#90a4ae,#607d8b); color:#fff; border:none; border-radius:16px; cursor:pointer; transition:transform 0.15s; }
+  .restart-btn:hover,.home-btn:hover { transform:scale(1.05); }
+
+  /* ── OVERLAYS ── */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100; align-items:center; justify-content:center; }
+  .overlay.show { display:flex; animation:fade-in 0.3s; }
+  @keyframes fade-in { from{opacity:0} to{opacity:1} }
+  .overlay-card { background:#fff; border-radius:32px; padding:36px 32px; text-align:center; max-width:340px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.25); animation:pop-in 0.45s cubic-bezier(.36,2,.4,1) both; }
+  .overlay-emoji { font-size:4.5rem; margin-bottom:8px; animation:spin-in 0.6s both; }
+  @keyframes spin-in { from{transform:rotate(-30deg) scale(0)} to{transform:rotate(0) scale(1)} }
+  .overlay-title { font-family: var(--font-display); font-weight: 800; font-size:2rem; color:var(--text); margin-bottom:6px; }
+  .overlay-msg   { font-size:1rem; color:#5c6bc0; font-weight:700; margin-bottom:20px; }
+  .overlay-btn   { font-family: var(--font-display); font-weight: 800; font-size:1.2rem; padding:13px 32px; background:linear-gradient(135deg,var(--green),#43a047); color:#fff; border:none; border-radius:18px; cursor:pointer; transition:transform 0.15s; }
+  .overlay-btn:hover { transform:scale(1.05); }
+  .fail-btn { background:linear-gradient(135deg,var(--orange),#f4511e) !important; }
+
+  /* ── CONFETTI ── */
+  .confetti-piece { position:fixed; border-radius:2px; opacity:0; pointer-events:none; z-index:200; animation:confetti-fall 1.4s ease-in forwards; }
+  @keyframes confetti-fall { 0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)} 100%{opacity:0;transform:translateY(110vh) rotate(720deg) scale(0.5)} }
+
+  /* ── CLOCK ── */
+  .clock-wrap { display:none; justify-content:center; margin-bottom:6px; }
+  .clock-wrap.visible { display:flex; }
+  #clockCanvas { border-radius:50%; display:block; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18)); }
+
+  /* When clock mode is active, tighten the card to fit everything */
+  .card.clock-mode { padding: 10px 12px 8px; }
+  .card.clock-mode .stats { margin-bottom: 6px; }
+  .card.clock-mode .stat-box { padding: 4px 3px; }
+  .card.clock-mode .stat-value { font-size: 1.1rem; }
+  .card.clock-mode .answer-display { font-size: 1.6rem; min-height: 40px; padding: 4px 10px; margin-bottom: 5px; }
+  .card.clock-mode .num-btn { padding: 8px 0; font-size: 1.1rem; }
+  .card.clock-mode .progress-wrap { margin-top: 6px; height: 6px; }
+  .card.clock-mode .stars-area { min-height: 16px; font-size: 0.85rem; margin: 2px 0; }
+  .card.clock-mode .trophies { margin-top: 2px; }
+  .card.clock-mode .trophy { font-size: 1.2rem; }
+  .card.clock-mode .feedback { font-size: 0.85rem; min-height: 18px; }
+  #wheelOverlay .overlay-card { max-width: 320px; padding: 20px 20px 18px; }
+  .wheel-title { font-family: var(--font-display); font-weight: 800; font-size:1.4rem; color:var(--text); margin-bottom:2px; }
+  .wheel-sub   { font-size:0.82rem; font-weight:700; color:#90a4ae; margin-bottom:14px; }
+
+  .wheel-wrap {
+    position: relative;
+    width: 200px; height: 200px;
+    margin: 0 auto 14px;
+  }
+
+  /* Canvas sits inside wrap */
+  #wheelCanvas { border-radius:50%; display:block; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+  /* Pointer: red downward triangle sitting above the wheel, centred */
+  .wheel-pointer {
+    position: absolute;
+    top: -16px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left:  12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top:   20px solid #e53935;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+    z-index: 4;
+  }
+
+  /* Spin button centred over canvas */
+  .wheel-spin-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffffff, #f0f0f0);
+    border: 3px solid #ddd;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.8);
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 0.72rem;
+    color: var(--text);
+    cursor: pointer;
+    z-index: 3;
+    transition: transform 0.1s, box-shadow 0.1s;
+    line-height: 1.15;
+    text-align: center;
+    padding: 0;
+  }
+  .wheel-spin-btn:hover:not(:disabled) {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+  }
+  .wheel-spin-btn:active:not(:disabled) {
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  .wheel-spin-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .wheel-result {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 1.3rem; color: var(--text);
+    min-height: 32px; text-align: center;
+    margin-bottom: 10px;
+  }
+  .wheel-continue-btn {
+    font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
+    padding: 10px 28px;
+    background: linear-gradient(135deg, var(--green), #43a047);
+    color: #fff; border: none; border-radius: 16px;
+    cursor: pointer; opacity: 0;
+    transition: opacity 0.4s, transform 0.15s;
+    box-shadow: 0 3px 12px rgba(102,187,106,0.4);
+  }
+  .wheel-continue-btn.show { opacity: 1; }
+  .wheel-continue-btn:hover { transform: scale(1.05); }
+
+  /* ── RESUME BANNER ── */
+  #resumeCard {
+    background: #fff;
+    border: 3px solid #FF7043;
+    border-radius: 14px;
+    padding: 9px 12px;
+    box-shadow: var(--shadow);
+  }
+  #resumeInfo {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  #resumeInfo span { color: #FF7043; }
+  #resumeBtn {
+    flex: 1;
+    font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+    padding: 9px 0;
+    background: linear-gradient(135deg, #FF7043, #e64a19);
+    color: #fff; border: none; border-radius: 12px;
+    cursor: pointer; box-shadow: 0 3px 10px rgba(255,112,67,0.4);
+    transition: transform 0.15s;
+  }
+  #resumeBtn:hover { transform: scale(1.04); }
+  #newGameBtn {
+    flex: 1;
+    font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+    padding: 9px 0;
+    background: linear-gradient(135deg, #90a4ae, #607d8b);
+    color: #fff; border: none; border-radius: 12px;
+    cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    transition: transform 0.15s;
+  }
+  #newGameBtn:hover { transform: scale(1.04); }</style>
+</head>
+<body>
+
+<!-- ══════════════ HOME VIEW ══════════════ -->
+<div class="view active" id="view-home">
+  <div class="hero-emoji">🦸</div>
+  <h1>Mattehjälten</h1>
+  <p class="subtitle">Välj vad du vill träna på!</p>
+
+  <!-- Resume banner (shown only when saved state exists) -->
+  <div id="resumeBanner" style="display:none; width:100%; margin-bottom:7px;">
+    <div id="resumeCard">
+      <div id="resumeInfo"></div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="resumeBtn" onclick="resumeGame()">▶ Fortsätt</button>
+        <button id="newGameBtn" onclick="newGame()">🔄 Nytt spel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mode-cards" id="modeCards">
+    <div class="mode-card add" onclick="startGame('add')">
+      <div class="mode-icon">➕</div>
+      <div>
+        <div class="mode-title">Addition</div>
+        <div class="mode-desc">Träna på att lägga ihop tal</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card div" onclick="startGame('div')">
+      <div class="mode-icon">➗</div>
+      <div>
+        <div class="mode-title">Division</div>
+        <div class="mode-desc">Träna på att dela upp tal</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card clk" onclick="startGame('clk')">
+      <div class="mode-icon">🕐</div>
+      <div>
+        <div class="mode-title">Klockan</div>
+        <div class="mode-desc">Vad är klockan?</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card mul" onclick="startGame('mul')">
+      <div class="mode-icon">✖️</div>
+      <div>
+        <div class="mode-title">Multiplikation</div>
+        <div class="mode-desc">Träna gånger-tabellen</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card sub" onclick="startGame('sub')">
+      <div class="mode-icon">➖</div>
+      <div>
+        <div class="mode-title">Subtraktion</div>
+        <div class="mode-desc">Träna på att ta bort tal</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card mix" onclick="startGame('mix')">
+      <div class="mode-icon">🔀</div>
+      <div>
+        <div class="mode-title">Mix</div>
+        <div class="mode-desc">Blanda alla fyra räknesätten</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+  </div>
+  <p class="home-footer">5 nivåer · Samla stjärnor · Klättra uppåt! ⭐</p>
+</div>
+
+<!-- ══════════════ GAME VIEW ══════════════ -->
+<div class="view" id="view-game">
+  <button class="back-btn" onclick="goHome()">← Tillbaka</button>
+  <div class="game-title" id="gameTitle">➕ Addition</div>
+  <div class="game-subtitle" id="gameSubtitle">Räkna ut summan!</div>
+
+  <div class="level-bar" id="levelBar"></div>
+
+  <div class="card">
+    <div class="stats">
+      <div class="stat-box"><div class="stat-label">Nivå</div><div class="stat-value lv" id="statLevel">1</div></div>
+      <div class="stat-box"><div class="stat-label">Streak 🔥</div><div class="stat-value streak" id="statStreak">0</div></div>
+      <div class="stat-box"><div class="stat-label">Poäng ⭐</div><div class="stat-value score" id="statScore">0</div></div>
+    </div>
+
+    <div id="gameArea">
+      <div class="question-area"><div class="question" id="question">? ? ? = ?</div></div>
+
+      <!-- Analog clock (shown only in clock mode) -->
+      <div class="clock-wrap" id="clockWrap">
+        <canvas id="clockCanvas" width="160" height="160"></canvas>
+      </div>
+
+      <!-- Answer display (read-only, filled by numpad) -->
+      <div class="answer-display" id="answerDisplay">–</div>
+
+      <!-- Numpad -->
+      <div class="numpad">
+        <button class="num-btn" onclick="numpadPress('7')">7</button>
+        <button class="num-btn" onclick="numpadPress('8')">8</button>
+        <button class="num-btn" onclick="numpadPress('9')">9</button>
+        <button class="num-btn" onclick="numpadPress('4')">4</button>
+        <button class="num-btn" onclick="numpadPress('5')">5</button>
+        <button class="num-btn" onclick="numpadPress('6')">6</button>
+        <button class="num-btn" onclick="numpadPress('1')">1</button>
+        <button class="num-btn" onclick="numpadPress('2')">2</button>
+        <button class="num-btn" onclick="numpadPress('3')">3</button>
+        <button class="num-btn zero" onclick="numpadPress('0')">0</button>
+        <button class="num-btn del"  onclick="numpadDel()">⌫</button>
+        <button class="num-btn check" onclick="checkAnswer()">✓ Kolla</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">0 / 10 rätta på denna nivå</div>
+      <div class="stars-area" id="starsArea"></div>
+      <div class="trophies" id="trophies"></div>
+    </div>
+
+    <div class="win-screen" id="winScreen">
+      <div class="win-emoji">🏆</div>
+      <div class="win-title">Du klarade ALLT!</div>
+      <div class="win-sub" id="winSub">Du är en riktig hjälte! 🎉</div>
+      <button class="restart-btn" onclick="restartGame()">🔄 Spela igen</button>
+      <button class="home-btn" onclick="goHome()">🏠 Hem</button>
+    </div>
+  </div>
+</div>
+
+<!-- Level-up overlay -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-emoji" id="overlayEmoji">🎉</div>
+    <div class="overlay-title" id="overlayTitle">Nivå upp!</div>
+    <div class="overlay-msg" id="overlayMsg">Bra jobbat!</div>
+    <button class="overlay-btn" onclick="dismissOverlay()">Fortsätt! 🚀</button>
+  </div>
+</div>
+
+<!-- Fail overlay -->
+<div class="overlay" id="failOverlay">
+  <div class="overlay-card">
+    <div class="overlay-emoji">😅</div>
+    <div class="overlay-title">Hoppsan!</div>
+    <div class="overlay-msg">3 fel – vi försöker igen! Du klarar det! 💪</div>
+    <button class="overlay-btn fail-btn" onclick="restartLevel()">Försök igen! 🔄</button>
+  </div>
+</div>
+
+<!-- Wheel overlay -->
+<div class="overlay" id="wheelOverlay">
+  <div class="overlay-card">
+    <div class="wheel-title">🎡 Snurra lyckohjulet!</div>
+    <div class="wheel-sub">Tryck på knappen i mitten</div>
+    <div class="wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheelCanvas" width="200" height="200"></canvas>
+      <button class="wheel-spin-btn" id="wheelSpinBtn" onclick="spinWheel()">SNURRA!</button>
+    </div>
+    <div class="wheel-result" id="wheelResult"></div>
+    <button class="wheel-continue-btn" id="wheelContinueBtn" onclick="dismissWheel()">Fortsätt! 🚀</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  MODE CONFIGS
+// ══════════════════════════════════════════════════════
+const MODES = {
+  add: {
+    title: '➕ Addition',
+    subtitle: 'Räkna ut summan!',
+    bodyClass: 'mode-add',
+    pipClass: 'add-pip',
+    winSub: 'Du är en riktig additionshjälte! 🎉',
+    levels: [
+      { emoji:'⭐', needCorrect:10, maxWrong:3, msg:'Super! Du kan addera upp till 20!' },
+      { emoji:'🌙', needCorrect:10, maxWrong:3, msg:'Toppen! Du klarar summor upp till 40!' },
+      { emoji:'🔥', needCorrect:10, maxWrong:3, msg:'Wow – du klarar summor upp till 60!' },
+      { emoji:'🦁', needCorrect:10, maxWrong:3, msg:'Otroligt! Summor upp till 80!' },
+      { emoji:'🏆', needCorrect:10, maxWrong:3, msg:'Du är en LEGEND – upp till 100!' },
+    ],
+    buildQueue(level) {
+      const maxVals = [10, 20, 30, 40, 50];
+      const max = maxVals[level];
+      const all = [];
+      for (let a = 1; a <= max; a++)
+        for (let b = 1; b <= max; b++)
+          all.push([a, b]);
+      return shuffle(all).slice(0, 10);
+    },
+    compute(a, b) { return a + b; },
+    format(a, b)  { return `${a} + ${b} = ?`; },
+  },
+
+  sub: {
+    title: '➖ Subtraktion',
+    subtitle: 'Räkna ut skillnaden!',
+    bodyClass: 'mode-sub',
+    pipClass: 'sub-pip',
+    winSub: 'Du är en riktig subtraktionshjälte! 🎉',
+    levels: [
+      { emoji:'⭐', needCorrect:10, maxWrong:3, msg:'Super! Subtraktion upp till 20!' },
+      { emoji:'🌙', needCorrect:10, maxWrong:3, msg:'Toppen! Du klarar upp till 40!' },
+      { emoji:'🔥', needCorrect:10, maxWrong:3, msg:'Wow – upp till 60!' },
+      { emoji:'🦁', needCorrect:10, maxWrong:3, msg:'Otroligt! Tal upp till 80!' },
+      { emoji:'🏆', needCorrect:10, maxWrong:3, msg:'Du är en LEGEND – upp till 100!' },
+    ],
+    buildQueue(level) {
+      const maxVals = [20, 40, 60, 80, 100];
+      const max = maxVals[level];
+      const all = [];
+      for (let a = 1; a <= max; a++)
+        for (let b = 0; b <= a; b++)
+          all.push([a, b]);
+      return shuffle(all).slice(0, 10);
+    },
+    compute(a, b) { return a - b; },
+    format(a, b)  { return `${a} − ${b} = ?`; },
+  },
+
+  mul: {
+    title: '✖️ Multiplikation',
+    subtitle: 'Träna gånger-tabellen!',
+    bodyClass: 'mode-mul',
+    pipClass: 'mul-pip',
+    winSub: 'Du är en riktig mattehjälte! 🎉',
+    levels: [
+      { emoji:'⭐', needCorrect:10, maxWrong:3, msg:'Du kan 1:ans och 2:ans tabell! Fantastiskt!' },
+      { emoji:'🌙', needCorrect:10, maxWrong:3, msg:'Tre tabeller klarade – du är grym!' },
+      { emoji:'🔥', needCorrect:10, maxWrong:3, msg:'Halva vägen! Fem tabeller – WOOW!' },
+      { emoji:'🦁', needCorrect:10, maxWrong:3, msg:'Sju tabeller! Du är otrolig!' },
+      { emoji:'🏆', needCorrect:10, maxWrong:3, msg:'ALLA tio tabeller! Du är en LEGEND!' },
+    ],
+    buildQueue(level) {
+      const tableSets = [[1,2],[1,2,3],[1,2,3,4,5],[1,2,3,4,5,6,7],[1,2,3,4,5,6,7,8,9,10]];
+      const tables = tableSets[level];
+      const all = [];
+      for (const a of tables)
+        for (let b = 1; b <= 10; b++)
+          all.push([a, b]);
+      return shuffle(all).slice(0, 10);
+    },
+    compute(a, b) { return a * b; },
+    format(a, b)  { return `${a} × ${b} = ?`; },
+  },
+
+  div: {
+    title: '➗ Division',
+    subtitle: 'Träna på att dela upp tal!',
+    bodyClass: 'mode-div',
+    pipClass: 'div-pip',
+    winSub: 'Du är en riktig divisionshjälte! 🎉',
+    levels: [
+      { emoji:'⭐', needCorrect:10, maxWrong:3, msg:'Super! Division med 1:ans och 2:ans tabell!' },
+      { emoji:'🌙', needCorrect:10, maxWrong:3, msg:'Tre tabeller klarade – du är grym!' },
+      { emoji:'🔥', needCorrect:10, maxWrong:3, msg:'Halva vägen! Fem tabeller – WOOW!' },
+      { emoji:'🦁', needCorrect:10, maxWrong:3, msg:'Sju tabeller! Du är otrolig!' },
+      { emoji:'🏆', needCorrect:10, maxWrong:3, msg:'ALLA tio tabeller! Du är en LEGEND!' },
+    ],
+    buildQueue(level) {
+      // Generate whole-number divisions: dividend = divisor × quotient
+      // Same table sets as multiplication
+      const tableSets = [[1,2],[1,2,3],[1,2,3,4,5],[1,2,3,4,5,6,7],[1,2,3,4,5,6,7,8,9,10]];
+      const divisors = tableSets[level];
+      const all = [];
+      for (const divisor of divisors)
+        for (let quotient = 1; quotient <= 10; quotient++) {
+          const dividend = divisor * quotient;
+          all.push([dividend, divisor]); // a ÷ b = quotient
+        }
+      return shuffle(all).slice(0, 10);
+    },
+    compute(a, b) { return a / b; },
+    format(a, b)  { return `${a} ÷ ${b} = ?`; },
+  },
+
+  mix: {
+    title: '🔀 Mix',
+    subtitle: 'Blanda alla fyra räknesätten!',
+    bodyClass: 'mode-mix',
+    pipClass: 'mix-pip',
+    winSub: 'Du klarar allt blandat – total hjälte! 🎉',
+    levels: [
+      { emoji:'⭐', needCorrect:10, maxWrong:3, msg:'Nivå 1 klar! Du blandar som ett proffs!' },
+      { emoji:'🌙', needCorrect:10, maxWrong:3, msg:'Nivå 2 klar! Svårare tal – du klarar det!' },
+      { emoji:'🔥', needCorrect:10, maxWrong:3, msg:'Halvvägs! Fyra räknesätt på en gång – wow!' },
+      { emoji:'🦁', needCorrect:10, maxWrong:3, msg:'Nivå 4 klar! Du är en mattemaskin!' },
+      { emoji:'🏆', needCorrect:10, maxWrong:3, msg:'ALLA nivåer! Du är en LEGEND!' },
+    ],
+    buildQueue(level) {
+      const ops = ['add', 'sub', 'mul', 'div'];
+      const all = [];
+      for (const op of ops) {
+        const opPairs = MODES[op].buildQueue(level);
+        opPairs.forEach(pair => all.push({ op, pair }));
+      }
+      const mixed = shuffle(all).slice(0, 10);
+      return mixed.map(({ op, pair }) => [...pair, ops.indexOf(op)]);
+    },
+    compute(a, b, opIdx) {
+      const ops = ['add','sub','mul','div'];
+      return MODES[ops[opIdx]].compute(a, b);
+    },
+    format(a, b, opIdx) {
+      const ops = ['add','sub','mul','div'];
+      return MODES[ops[opIdx]].format(a, b);
+    },
+  },
+
+  clk: {
+    title: '🕐 Klockan',
+    subtitle: 'Vad är klockan?',
+    bodyClass: 'mode-clk',
+    pipClass: 'clk-pip',
+    winSub: 'Du kan klockan! Tidsmästare! 🎉',
+    isClock: true,
+    levels: [
+      { emoji:'⭐', needCorrect:10, maxWrong:3, msg:'Hela timmar – du är grym!' },
+      { emoji:'🌙', needCorrect:10, maxWrong:3, msg:'Halvtimmar klarade – bra jobbat!' },
+      { emoji:'🔥', needCorrect:10, maxWrong:3, msg:'Kvartar klarade – wow!' },
+      { emoji:'🦁', needCorrect:10, maxWrong:3, msg:'5-minutersintervall – otroligt!' },
+      { emoji:'🏆', needCorrect:10, maxWrong:3, msg:'Alla minuter – du är en LEGEND!' },
+    ],
+    buildQueue(level) {
+      // Level 0: whole hours (xx:00), Level 1: +half (xx:30), Level 2: +quarters,
+      // Level 3: +5-min, Level 4: any minute
+      const times = [];
+      for (let h = 0; h < 12; h++) {
+        if (level === 0) {
+          times.push([h, 0]);
+        } else if (level === 1) {
+          times.push([h, 0], [h, 30]);
+        } else if (level === 2) {
+          times.push([h, 0], [h, 15], [h, 30], [h, 45]);
+        } else if (level === 3) {
+          for (let m = 0; m < 60; m += 5) times.push([h, m]);
+        } else {
+          for (let m = 0; m < 60; m++) times.push([h, m]);
+        }
+      }
+      return shuffle(times).slice(0, 10);
+    },
+    compute(h, m) {
+      // When both hands point to 12, show as 12:00 (not 00:00)
+      const displayH = (h === 0 && m === 0) ? 12 : h;
+      return displayH * 100 + m;
+    },
+    format(h, m) { return null; }, // clock draws on canvas, no text question
+  },
+};
+
+const LEVEL_UP_MESSAGES = [
+  '🎊 Wahoo! Ny nivå!','🚀 Upp, upp och iväg!',
+  '🌟 Du skiner som en stjärna!','🦸 Superhjälten vaknar!','💥 KA-POW! Nivå upp!',
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let mode, level, correctThisLevel, wrongThisLevel, streak, totalScore;
+let stars, trophies, questionQueue;
+let currentA, currentB, currentAnswer;
+let numpadValue = '';
+
+// ══════════════════════════════════════════════════════
+//  PERSIST STATE
+// ══════════════════════════════════════════════════════
+const SAVE_KEY = 'mattehjälten_save';
+
+function saveState() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      mode, level, correctThisLevel, wrongThisLevel,
+      streak, totalScore, stars, trophies
+    }));
+  } catch(e) {}
+}
+
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+}
+
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function initHome() {
+  const save = loadSave();
+  const banner = document.getElementById('resumeBanner');
+  if (save && MODES[save.mode]) {
+    const modeNames = { add:'Addition', clk:'Klockan', div:'Division', sub:'Subtraktion', mul:'Multiplikation', mix:'Mix' };
+    const modeIcons = { add:'➕', clk:'🕐', div:'➗', sub:'➖', mul:'✖️', mix:'🔀' };
+    document.getElementById('resumeInfo').innerHTML =
+      `${modeIcons[save.mode]} <span>${modeNames[save.mode]}</span> – Nivå ${save.level + 1}, ${save.totalScore} poäng`;
+    banner.style.display = '';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function resumeGame() {
+  const save = loadSave();
+  if (!save || !MODES[save.mode]) return;
+  mode             = save.mode;
+  level            = save.level;
+  correctThisLevel = save.correctThisLevel;
+  wrongThisLevel   = save.wrongThisLevel;
+  streak           = save.streak;
+  totalScore       = save.totalScore;
+  stars            = save.stars || [];
+  trophies         = save.trophies || [];
+  numpadValue      = '';
+  applyModeUI();
+  buildQueue(); buildLevelBar(); buildTrophies(); updateUI(); nextQuestion();
+  document.getElementById('gameArea').style.display = '';
+  document.getElementById('winScreen').classList.remove('show');
+  showView('view-game');
+}
+
+function newGame() {
+  clearSave();
+  document.getElementById('resumeBanner').style.display = 'none';
+}
+
+function applyModeUI() {
+  const cfg = MODES[mode];
+  document.body.className = cfg.bodyClass;
+  document.getElementById('gameTitle').textContent    = cfg.title;
+  document.getElementById('gameSubtitle').textContent = cfg.subtitle;
+  document.getElementById('gameSubtitle').style.color =
+    mode === 'add' ? '#388e3c' : mode === 'sub' ? '#1565c0' : mode === 'mul' ? '#6a1b9a' : mode === 'div' ? '#00838f' : mode === 'clk' ? '#4527a0' : '#bf360c';
+  document.getElementById('winSub').textContent = cfg.winSub;
+}
+
+// ══════════════════════════════════════════════════════
+//  VIEW SWITCHING
+// ══════════════════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  if (mode) saveState();
+  document.body.className = '';
+  initHome();
+  showView('view-home');
+}
+
+function startGame(m) {
+  mode = m;
+  level = 0; correctThisLevel = 0; wrongThisLevel = 0;
+  streak = 0; totalScore = 0; stars = []; trophies = [];
+  numpadValue = '';
+  applyModeUI();
+  document.getElementById('gameArea').style.display = '';
+  document.getElementById('winScreen').classList.remove('show');
+  buildQueue(); buildLevelBar(); buildTrophies(); updateUI(); nextQuestion();
+  showView('view-game');
+}
+
+// ══════════════════════════════════════════════════════
+//  NUMPAD
+// ══════════════════════════════════════════════════════
+function numpadPress(digit) {
+  if (numpadValue.length >= 4) return; // max 4 digits
+  numpadValue += digit;
+  refreshDisplay();
+}
+
+function numpadDel() {
+  numpadValue = numpadValue.slice(0, -1);
+  refreshDisplay();
+}
+
+function refreshDisplay() {
+  const el = document.getElementById('answerDisplay');
+  if (mode === 'clk') {
+    const d = numpadValue;
+    const h1 = d[0] ?? '–';
+    const h2 = d[1] ?? '–';
+    const m1 = d[2] ?? '–';
+    const m2 = d[3] ?? '–';
+    el.textContent = `${h1}${h2}:${m1}${m2}`;
+  } else {
+    el.textContent = numpadValue === '' ? '–' : numpadValue;
+  }
+  el.classList.toggle('has-value', numpadValue !== '');
+}
+
+function clearNumpad() {
+  numpadValue = '';
+  refreshDisplay();
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildQueue() {
+  questionQueue = MODES[mode].buildQueue(level);
+}
+
+function buildLevelBar() {
+  const bar = document.getElementById('levelBar');
+  const lvls = MODES[mode].levels;
+  bar.innerHTML = '';
+  lvls.forEach((lv, i) => {
+    const pip = document.createElement('div');
+    const cls = i < level ? 'done' : i === level ? `active ${MODES[mode].pipClass}` : '';
+    pip.className = `level-pip ${cls}`;
+    pip.textContent = lv.emoji;
+    bar.appendChild(pip);
+  });
+}
+
+function buildTrophies() {
+  const wrap = document.getElementById('trophies');
+  const lvls = MODES[mode].levels;
+  wrap.innerHTML = '';
+  lvls.forEach((lv, i) => {
+    const t = document.createElement('div');
+    t.className = 'trophy' + (trophies.includes(i) ? ' earned' : '');
+    t.textContent = lv.emoji;
+    wrap.appendChild(t);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  GAME LOGIC
+// ══════════════════════════════════════════════════════
+function nextQuestion() {
+  if (questionQueue.length === 0) buildQueue();
+  const entry = questionQueue.shift();
+  currentA = entry[0];
+  currentB = entry[1];
+  const opIdx = entry[2]; // undefined for non-mix modes
+
+  const isClock = mode === 'clk';
+  document.getElementById('clockWrap').classList.toggle('visible', isClock);
+  document.getElementById('question').parentElement.style.display = isClock ? 'none' : '';
+  document.querySelector('.card').classList.toggle('clock-mode', isClock);
+
+  // Resize canvas for compact fit
+  const canvas = document.getElementById('clockCanvas');
+  if (isClock) { canvas.width = 130; canvas.height = 130; }
+
+  if (isClock) {
+    currentAnswer = MODES.clk.compute(currentA, currentB);
+    drawClock(currentA, currentB);
+  } else if (mode === 'mix') {
+    currentAnswer = MODES.mix.compute(currentA, currentB, opIdx);
+  } else {
+    currentAnswer = MODES[mode].compute(currentA, currentB);
+  }
+
+  const qEl = document.getElementById('question');
+  if (!isClock) {
+    qEl.style.animation = 'none';
+    requestAnimationFrame(() => {
+      qEl.style.animation = '';
+      qEl.textContent = mode === 'mix'
+        ? MODES.mix.format(currentA, currentB, opIdx)
+        : MODES[mode].format(currentA, currentB);
+    });
+  }
+
+  const inp = document.getElementById('answerInput');
+  if (inp) { inp.value = ''; }
+  clearNumpad();
+  clearFeedback();
+}
+
+function checkAnswer() {
+  if (mode === 'clk') {
+    if (numpadValue.length < 4) return; // need exactly 4 digits
+    const h = parseInt(numpadValue.slice(0,2), 10);
+    const m = parseInt(numpadValue.slice(2,4), 10);
+    if (m >= 60 || (h >= 12 && !(h === 12 && m === 0))) { // only 00:00–11:59 and 12:00
+      showFeedback('wrong', '❌ Ogiltig tid – försök igen!');
+      clearNumpad(); return;
+    }
+    const guess = h * 100 + m;
+    if (guess === currentAnswer) handleCorrect(); else handleWrong();
+  } else {
+    if (numpadValue === '') return;
+    const guess = parseInt(numpadValue, 10);
+    if (guess === currentAnswer) handleCorrect(); else handleWrong();
+  }
+}
+
+function handleCorrect() {
+  correctThisLevel++; streak++; totalScore++;
+  stars.push('⭐');
+  showFeedback('correct', '✅ Rätt! ' + ['Toppen!','Bra jobbat!','Superduper!','Jättebra!','Wow!','Kanon!'][Math.floor(Math.random()*6)]);
+  updateUI();
+  saveState();
+  if (correctThisLevel >= MODES[mode].levels[level].needCorrect) { levelUp(); return; }
+  setTimeout(nextQuestion, 900);
+}
+
+function handleWrong() {
+  wrongThisLevel++; streak = 0;
+  const maxW = MODES[mode].levels[level].maxWrong;
+  if (wrongThisLevel >= maxW) {
+    showFeedback('wrong', '❌ Fel svar – försök igen!');
+    updateUI();
+    setTimeout(() => document.getElementById('failOverlay').classList.add('show'), 800);
+  } else {
+    showFeedback('wrong', `❌ Fel svar – försök igen! (${wrongThisLevel}/${maxW} fel)`);
+    updateUI();
+    clearNumpad();
+  }
+}
+
+function restartLevel() {
+  document.getElementById('failOverlay').classList.remove('show');
+  correctThisLevel = 0; wrongThisLevel = 0; streak = 0;
+  buildQueue(); updateUI(); saveState(); nextQuestion();
+}
+
+function levelUp() {
+  trophies.push(level);
+  buildTrophies();
+
+  const lv = MODES[mode].levels[level];
+  document.getElementById('overlayEmoji').textContent = lv.emoji;
+  document.getElementById('overlayTitle').textContent = LEVEL_UP_MESSAGES[Math.floor(Math.random()*LEVEL_UP_MESSAGES.length)];
+  document.getElementById('overlayMsg').textContent   = lv.msg;
+  document.getElementById('overlay').classList.add('show');
+  launchConfetti();
+
+  level++; correctThisLevel = 0; wrongThisLevel = 0;
+  if (level < MODES[mode].levels.length) buildQueue();
+  updateUI(); buildLevelBar();
+  saveState();
+}
+
+function dismissOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  if (level >= MODES[mode].levels.length) {
+    showWinScreen();
+  } else {
+    showWheel();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  LUCKY WHEEL
+// ══════════════════════════════════════════════════════
+const WHEEL_SEGMENTS = [1, 2, 3, 1, 2, 3];
+const WHEEL_COLORS   = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B','#C77DFF'];
+const WHEEL_LABELS   = WHEEL_SEGMENTS.map(String);
+
+let wheelAngle    = 0;   // current resting angle (radians)
+let wheelSpinning = false;
+let wheelPendingAction = null; // 'next' or 'win'
+
+function drawWheel(angle) {
+  const canvas = document.getElementById('wheelCanvas');
+  const ctx    = canvas.getContext('2d');
+  const cx = 100, cy = 100, r = 94;
+  const n   = WHEEL_SEGMENTS.length;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, 200, 200);
+
+  // Outer decorative ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 4, 0, 2 * Math.PI);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fill();
+
+  // Slices
+  for (let i = 0; i < n; i++) {
+    const start = angle + i * arc;
+    const end   = start + arc;
+    const mid   = start + arc / 2;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = WHEEL_COLORS[i];
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Number label — always upright, centred in the slice
+    const labelR = r * 0.63;
+    const lx = cx + Math.cos(mid) * labelR;
+    const ly = cy + Math.sin(mid) * labelR;
+
+    ctx.save();
+    ctx.translate(lx, ly);
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor  = 'rgba(0,0,0,0.4)';
+    ctx.shadowBlur   = 5;
+    ctx.fillStyle    = '#fff';
+    ctx.font         = "bold 32px ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif";
+    ctx.fillText(WHEEL_LABELS[i], 0, 0);
+    ctx.restore();
+  }
+
+  // Centre hub
+  ctx.beginPath();
+  ctx.arc(cx, cy, 26, 0, 2 * Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,0.25)';
+  ctx.shadowBlur  = 8;
+  ctx.fill();
+  ctx.shadowBlur  = 0;
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function showWheel() {
+  wheelAngle    = 0;
+  wheelSpinning = false;
+  document.getElementById('wheelResult').textContent      = '';
+  document.getElementById('wheelContinueBtn').classList.remove('show');
+  document.getElementById('wheelSpinBtn').disabled        = false;
+  drawWheel(wheelAngle);
+  document.getElementById('wheelOverlay').classList.add('show');
+}
+
+function spinWheel() {
+  if (wheelSpinning) return;
+  wheelSpinning = true;
+  document.getElementById('wheelSpinBtn').disabled = true;
+  document.getElementById('wheelResult').textContent = '';
+  document.getElementById('wheelContinueBtn').classList.remove('show');
+
+  // Random extra spins (5–8 full rotations) + random offset
+  const extraSpins = (5 + Math.random() * 3) * 2 * Math.PI;
+  const targetAngle = wheelAngle + extraSpins;
+  const duration    = 3500; // ms
+  const startTime   = performance.now();
+  const startAngle  = wheelAngle;
+
+  function easeOut(t) {
+    return 1 - Math.pow(1 - t, 4);
+  }
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    wheelAngle = startAngle + extraSpins * easeOut(t);
+    drawWheel(wheelAngle);
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      wheelAngle = targetAngle % (2 * Math.PI);
+      wheelSpinning = false;
+      showWheelResult();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function showWheelResult() {
+  const n   = WHEEL_SEGMENTS.length;
+  const arc = (2 * Math.PI) / n;
+
+  // Pointer is at top (−π/2). Work out which segment is under it.
+  const norm = ((wheelAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  const pointerAngle = (2 * Math.PI - norm + (3 * Math.PI / 2)) % (2 * Math.PI);
+  const segIndex = Math.floor(pointerAngle / arc) % n;
+  const value    = WHEEL_SEGMENTS[segIndex];
+
+  document.getElementById('wheelResult').textContent = `Du landade på: ${value}!`;
+  setTimeout(() => {
+    document.getElementById('wheelContinueBtn').classList.add('show');
+  }, 400);
+}
+
+function dismissWheel() {
+  document.getElementById('wheelOverlay').classList.remove('show');
+  if (level >= MODES[mode].levels.length) showWinScreen(); else nextQuestion();
+}
+
+function showWinScreen() {
+  clearSave();
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('winScreen').classList.add('show');
+  launchConfetti(120);
+}
+
+function restartGame() {
+  level = 0; correctThisLevel = 0; wrongThisLevel = 0;
+  streak = 0; totalScore = 0; stars = []; trophies = [];
+  document.getElementById('gameArea').style.display = '';
+  document.getElementById('winScreen').classList.remove('show');
+  buildQueue(); buildLevelBar(); buildTrophies(); updateUI(); saveState(); nextQuestion();
+}
+
+function updateUI() {
+  const lvls = MODES[mode].levels;
+  document.getElementById('statLevel').textContent  = level + 1 > lvls.length ? '🏆' : level + 1;
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statScore').textContent  = totalScore;
+  document.getElementById('starsArea').textContent  = stars.slice(-20).join('');
+  const lv = lvls[Math.min(level, lvls.length - 1)];
+  document.getElementById('progressBar').style.width = Math.min(correctThisLevel / lv.needCorrect * 100, 100) + '%';
+  document.getElementById('progressLabel').textContent = `${correctThisLevel} / ${lv.needCorrect} rätta på denna nivå`;
+}
+
+function showFeedback(type, msg) {
+  const el = document.getElementById('feedback');
+  el.className = 'feedback ' + type; el.textContent = msg;
+}
+function clearFeedback() {
+  const el = document.getElementById('feedback');
+  el.className = 'feedback'; el.textContent = '';
+}
+
+// ══════════════════════════════════════════════════════
+//  ANALOG CLOCK
+// ══════════════════════════════════════════════════════
+function drawClock(hours, minutes) {
+  const canvas = document.getElementById('clockCanvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2, r = cx - 4;
+  ctx.clearRect(0, 0, w, h);
+
+  // Face background
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.strokeStyle = '#5e35b1';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Hour tick marks
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * 2 * Math.PI - Math.PI / 2;
+    const inner = i % 3 === 0 ? r - 12 : r - 7;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+    ctx.lineTo(cx + Math.cos(a) * (r - 3), cy + Math.sin(a) * (r - 3));
+    ctx.strokeStyle = i % 3 === 0 ? '#311b92' : '#9575cd';
+    ctx.lineWidth = i % 3 === 0 ? 2.5 : 1.5;
+    ctx.stroke();
+  }
+
+  // Hour numbers
+  ctx.fillStyle = '#311b92';
+  ctx.font = `bold ${Math.round(r * 0.18)}px ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 1; i <= 12; i++) {
+    const a = (i / 12) * 2 * Math.PI - Math.PI / 2;
+    ctx.fillText(String(i), cx + Math.cos(a) * (r - 20), cy + Math.sin(a) * (r - 20));
+  }
+
+  // Hour hand (short)
+  const hourAngle = ((hours % 12) + minutes / 60) / 12 * 2 * Math.PI - Math.PI / 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(hourAngle) * r * 0.48, cy + Math.sin(hourAngle) * r * 0.48);
+  ctx.strokeStyle = '#1a237e';
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Minute hand (long)
+  const minAngle = (minutes / 60) * 2 * Math.PI - Math.PI / 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(minAngle) * r * 0.72, cy + Math.sin(minAngle) * r * 0.72);
+  ctx.strokeStyle = '#e53935';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Centre dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1a237e';
+  ctx.fill();
+}
+
+function launchConfetti(count = 60) {
+  const colors = ['#FFD600','#42a5f5','#66BB6A','#EF5350','#AB47BC','#FFA726','#26C6DA'];
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;animation-duration:${1+Math.random()}s`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }, i * 22);
+  }
+}
+// Init on load
+initHome();
+</script>
+</body>
+</html>
